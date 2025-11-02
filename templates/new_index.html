@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Advanced Crop Yield Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+      body {
+        background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+        font-family: 'Montserrat', sans-serif;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+      
+      #particles-js {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+      
+      .container {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 40px;
+        color: #333;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        margin-top: 30px;
+        margin-bottom: 30px;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        z-index: 1;
+      }
+      
+      .form-control, .form-select {
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+      
+      .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.2);
+        border-color: #1a2a6c;
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+      
+      .btn-predict {
+        background: linear-gradient(45deg, #1a2a6c 0%, #b21f1f 100%);
+        border: none;
+        border-radius: 30px;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(26, 42, 108, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .btn-predict:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: 0.5s;
+      }
+      
+      .btn-predict:hover:before {
+        left: 100%;
+      }
+      
+      .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin: 30px 0;
+      }
+      
+      .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        flex: 1;
+        margin: 0 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+      
+      .stat-card:hover {
+        transform: translateY(-5px) scale(1.02);
+      }
+      
+      .chart-container {
+        position: relative;
+        margin: 20px 0;
+        height: 300px;
+      }
+      
+      .floating-card {
+        animation: float 3s ease-in-out infinite;
+      }
+      
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      
+      .prediction-result {
+        background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 30px;
+        text-align: center;
+        animation: fadeIn 0.5s ease-out;
+        box-shadow: 0 10px 30px rgba(26, 42, 108, 0.3);
+      }
+      
+      .form-section {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="particles-js"></div>
+    <div class="container animate__animated animate__fadeIn">
+      <div class="text-center mb-4">
+        <div class="header-icon floating-card">
+          <i class="fas fa-seedling fa-4x" style="background: linear-gradient(45deg, #1a2a6c, #b21f1f); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        </div>
+        <h1 class="animate__animated animate__fadeInUp" style="font-weight: 700; color: #1a2a6c;">Advanced Crop Yield Prediction</h1>
+        <h2 class="animate__animated animate__fadeInUp animate__delay-1s" style="color: #b21f1f;">AI-Powered Agriculture Analytics</h2>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-card" data-aos="fade-up">
+          <i class="fas fa-globe fa-2x mb-2" style="color: #1a2a6c;"></i>
+          <div class="stat-value">Global Data</div>
+          <div class="stat-label">Analysis</div>
+        </div>
+        <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+          <i class="fas fa-brain fa-2x mb-2" style="color: #b21f1f;"></i>
+          <div class="stat-value">ML Model</div>
+          <div class="stat-label">Prediction</div>
+        </div>
+        <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+          <i class="fas fa-chart-line fa-2x mb-2" style="color: #fdbb2d;"></i>
+          <div class="stat-value">Real-time</div>
+          <div class="stat-label">Analytics</div>
+        </div>
+      </div>
+
+      <div class="form-section glass-card">
+        <form id="predictionForm" action="/predict" method="post">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="glass-card" data-aos="fade-right">
+                <div class="input-group">
+                  <label><i class="fas fa-calendar me-2"></i>Year</label>
+                  <input type="number" class="form-control" name="Year" value="2013" required>
+                </div>
+                <div class="input-group">
+                  <label><i class="fas fa-cloud-rain me-2"></i>Average Rainfall (mm/year)</label>
+                  <input type="number" class="form-control" name="average_rain_fall_mm_per_year" required>
+                </div>
+                <div class="input-group">
+                  <label><i class="fas fa-flask me-2"></i>Pesticides (Tonnes)</label>
+                  <input type="number" class="form-control" name="pesticides_tonnes" required>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="glass-card" data-aos="fade-left">
+                <div class="input-group">
+                  <label><i class="fas fa-temperature-high me-2"></i>Average Temperature (°C)</label>
+                  <input type="number" class="form-control" name="avg_temp" required>
+                </div>
+                <div class="input-group">
+                  <label><i class="fas fa-map-marker-alt me-2"></i>Country</label>
+                  <select class="form-select" name="Area" required>
+                    <option value="">Select a country</option>
+                    {% for area in areas %}
+                    <option value="{{ area }}">{{ area }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label><i class="fas fa-leaf me-2"></i>Crop Type</label>
+                  <select class="form-select" name="Item" required>
+                    <option value="">Select a crop</option>
+                    {% for crop in crops %}
+                    <option value="{{ crop }}">{{ crop }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-predict">
+              <i class="fas fa-chart-bar me-2"></i> Generate Prediction
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {% if prediction %}
+      <div class="prediction-result animate__animated animate__fadeInUp">
+        <div class="glass-card">
+          <h2 class="mb-3" style="color: white;">Predicted Yield Results</h2>
+          <div class="row">
+            <div class="col-md-6">
+              <canvas id="yieldChart"></canvas>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-value" style="font-size: 3rem; color: white;">
+                {{prediction[0]}} <small>hg/ha</small>
+              </div>
+              <p class="mt-3" style="color: rgba(255,255,255,0.9);">
+                Based on advanced machine learning analysis of historical crop data and environmental factors
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+      // Initialize AOS
+      AOS.init();
+
+      // Initialize particles.js
+      particlesJS('particles-js',
+        {
+          "particles": {
+            "number": {
+              "value": 80,
+              "density": {
+                "enable": true,
+                "value_area": 800
+              }
+            },
+            "color": {
+              "value": "#ffffff"
+            },
+            "shape": {
+              "type": "circle"
+            },
+            "opacity": {
+              "value": 0.5,
+              "random": false
+            },
+            "size": {
+              "value": 3,
+              "random": true
+            },
+            "line_linked": {
+              "enable": true,
+              "distance": 150,
+              "color": "#ffffff",
+              "opacity": 0.4,
+              "width": 1
+            },
+            "move": {
+              "enable": true,
+              "speed": 6,
+              "direction": "none",
+              "random": false,
+              "straight": false,
+              "out_mode": "out",
+              "bounce": false
+            }
+          },
+          "interactivity": {
+            "detect_on": "canvas",
+            "events": {
+              "onhover": {
+                "enable": true,
+                "mode": "repulse"
+              },
+              "onclick": {
+                "enable": true,
+                "mode": "push"
+              },
+              "resize": true
+            }
+          },
+          "retina_detect": true
+        }
+      );
+
+      // Form submission handling
+      document.getElementById('predictionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+          title: 'Processing',
+          html: '<i class="fas fa-cog fa-spin"></i> Analyzing crop data...',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        }).then(() => {
+          this.submit();
+        });
+      });
+
+      // Initialize chart if prediction exists
+      {% if prediction %}
+      const ctx = document.getElementById('yieldChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Predicted Yield'],
+          datasets: [{
+            label: 'Crop Yield (hg/ha)',
+            data: [{{prediction[0]}}],
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            borderColor: 'rgba(255, 255, 255, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: 'white'
+              }
+            },
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: 'white'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: 'white'
+              }
+            }
+          }
+        }
+      });
+      {% endif %}
+
+      // Add animation to form inputs
+      document.querySelectorAll('.form-control, .form-select').forEach(input => {
+        input.addEventListener('focus', function() {
+          this.closest('.glass-card').style.transform = 'scale(1.02)';
+        });
+        
+        input.addEventListener('blur', function() {
+          this.closest('.glass-card').style.transform = 'scale(1)';
+        });
+      });
+    </script>
+  </body>
+</html>
